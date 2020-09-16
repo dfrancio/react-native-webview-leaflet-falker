@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Platform } from "react-native";
 import { WebView } from "react-native-webview";
 import RNFS from "react-native-fs";
 import WebViewLeafletView from "./WebViewLeaflet.view";
@@ -70,14 +71,14 @@ class WebViewLeaflet extends React.Component<WebViewLeafletProps, State> {
   };
 
   private loadHTMLFile = async () => {
-    await RNFS.readFileAssets("index.html") // On Android, use "RNFS.DocumentDirectoryPath" (MainBundlePath is not defined)
+    if(Platform.OS === 'ios'){
+      await RNFS.readFile(RNFS.MainBundlePath + "/assets/src/assets/index.html")
       .then((result) => {
-        // console.log('GOT RESULT', result);
+        //console.log('GOT RESULT', result);
         if (result) {
           try {
-            // let asset: Asset = await AssetUtils.resolveAsync(INDEX_FILE_PATH);
+            //let asset: Asset = await AssetUtils.resolveAsync(INDEX_FILE_PATH);
             let fileString: string = result;
-
             this.setState({ webviewContent: fileString });
           } catch (error) {
             console.warn(error);
@@ -88,6 +89,26 @@ class WebViewLeaflet extends React.Component<WebViewLeafletProps, State> {
       .catch((err) => {
         console.log(err.message, err.code);
       });
+    }
+    else{
+      await RNFS.readFileAssets("index.html") // On Android, use "RNFS.DocumentDirectoryPath" (MainBundlePath is not defined)
+      .then((result) => {
+        //console.log('GOT RESULT', result); 
+        if (result) {
+          try {
+            // let asset: Asset = await AssetUtils.resolveAsync(INDEX_FILE_PATH);
+            let fileString: string = result;
+            this.setState({ webviewContent: fileString });
+          } catch (error) {
+            console.warn(error);
+            console.warn("Unable to resolve index file");
+          }
+        }
+      })
+      .catch((err) => {
+        console.log(err.message, err.code);
+      });
+    }
   };
 
   componentDidUpdate = (prevProps: WebViewLeafletProps, prevState: State) => {
